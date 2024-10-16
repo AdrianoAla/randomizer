@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Arocena's Group Randomizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        input, button, .slider-container {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        #ui-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        input[type="range"] {
+            width: 200px;
+            margin: 0;
+            padding: 0;
+        }
+
+        #resultContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .group {
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .group-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Random vibrant background colors for groups */
+        .group:nth-child(1) { background-color: #ff6b6b; }
+        .group:nth-child(2) { background-color: #4ecdc4; }
+        .group:nth-child(3) { background-color: #ffe66d; color: black; }
+        .group:nth-child(4) { background-color: #1a535c; }
+        .group:nth-child(5) { background-color: #ff9f1c; }
+        .group:nth-child(6) { background-color: #2ec4b6; }
+        .group:nth-child(7) { background-color: #e71d36; }
+        .group:nth-child(8) { background-color: #a0c4ff; color: black; }
+
+        /* Hover effect for groups */
+        .group:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (min-width: 768px) {
+            #ui-container {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            input [type="text"] {
+                width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Mr. Arocena's Group Randomizer</h1>
+
+    <div id="ui-container">
+        <div>
+            <input type="text" id="nameInput" placeholder="Enter names, separated by commas" size="50">
+            <button onclick="randomizeGroups()">Randomize</button>
+        </div>
+
+        <div class="slider-container">
+            <label for="groupSizeSlider">Group Size: <span id="groupSizeDisplay">4</span></label>
+            <input type="range" id="groupSizeSlider" min="2" max="5" value="4" oninput="updateGroupSizeDisplay()">
+        </div>
+    </div>
+
+    <div id="resultContainer"></div>
+
+    <script>
+        function updateGroupSizeDisplay() {
+            const groupSize = document.getElementById("groupSizeSlider").value;
+            document.getElementById("groupSizeDisplay").textContent = groupSize;
+        }
+
+        function randomizeGroups() {
+            const input = document.getElementById("nameInput").value;
+            let names = input.split(',').map(name => name.trim()).filter(name => name !== "");
+
+            if (names.length === 0) {
+                alert("Please enter some names.");
+                return;
+            }
+
+            const groupSize = parseInt(document.getElementById("groupSizeSlider").value);
+
+            // Ensure "Adriano" and "Lilly" are together if both are present
+            const specialPair = ["Adriano", "Lilly"];
+            // Shuffle order of special pair
+            specialPair.sort(() => Math.random() - 0.5);
+            let remainingNames = names.filter(name => !specialPair.includes(name));
+            let forcedGroup = [];
+
+            if (names.includes("Adriano") && names.includes("Lilly")) {
+                forcedGroup = [...specialPair];
+            }
+
+            // Shuffle remaining names
+            for (let i = remainingNames.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [remainingNames[i], remainingNames[j]] = [remainingNames[j], remainingNames[i]];
+            }
+
+            // Insert the forced group into the shuffled names at a random position
+            if (forcedGroup.length) {
+                const insertIndex = Math.floor(Math.random() * (remainingNames.length + 1));
+                remainingNames.splice(insertIndex, 0, ...forcedGroup);
+            }
+
+            // Clear previous results
+            const resultContainer = document.getElementById("resultContainer");
+            resultContainer.innerHTML = '';
+
+            // Create groups of the specified size and display them
+            let groupCount = 1;
+            for (let i = 0; i < remainingNames.length; i += groupSize) {
+                const group = remainingNames.slice(i, i + groupSize);
+
+                const groupDiv = document.createElement('div');
+                groupDiv.classList.add('group');
+
+                const groupTitle = document.createElement('div');
+                groupTitle.classList.add('group-title');
+                groupTitle.textContent = `Group ${groupCount}:`;
+                groupDiv.appendChild(groupTitle);
+
+                const groupNames = document.createElement('div');
+                groupNames.textContent = group.join(', ');
+                groupDiv.appendChild(groupNames);
+
+                resultContainer.appendChild(groupDiv);
+                groupCount++;
+            }
+        }
+    </script>
+
+</body>
+</html>
